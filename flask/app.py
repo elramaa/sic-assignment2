@@ -1,4 +1,4 @@
-from flask import Flask, request
+from flask import Flask, request, render_template
 from dotenv import load_dotenv
 import pymongo
 import os
@@ -14,7 +14,7 @@ db = client["db"]
 
 @app.route("/")
 def index():
-    return "ok"
+    return render_template("index.html")
 
 
 @app.route("/api/temp", methods=["GET", "POST"])
