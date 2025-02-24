@@ -80,3 +80,7 @@ def iot_api():
         data = {"humidity": humidity, "distance": distance, "temp": temp}
         send_ubidots(data)
         return data
+
+
+if __name__ == "__main__":
+    app.run()
