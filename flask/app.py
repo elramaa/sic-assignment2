@@ -3,9 +3,9 @@ from dotenv import load_dotenv
 import pymongo
 import os
 from utils import get_time_now, send_ubidots
-import requests as req
 
 load_dotenv()
+AUTH_TOKEN = "novasmansa321"
 
 app = Flask(__name__)
 client = pymongo.MongoClient(os.getenv("MONGO_URL"))
@@ -14,46 +14,53 @@ db = client["db"]
 
 @app.route("/")
 def index():
-    print(db)
-    return "Index Page"
+    return "ok"
 
 
 @app.route("/api/temp", methods=["GET", "POST"])
 def temp_api():
-    temp_collections = db["temperature"]
+    collections = db["temperature"]
     if request.method == "POST":
+        if request.headers.get("X-Auth-Token") != AUTH_TOKEN:
+            return "Unauthorized", 401
         temp = request.json["temp"]
         print(temp)
-        temp_collections.insert_one({"temp": temp, "time": get_time_now()})
+        collections.insert_one({"temp": temp, "time": get_time_now()})
         send_ubidots({"temp": temp})
         return f"Data sent: {temp}"
     if request.method == "GET":
-        print(temp_collections.find_one())
-        return str(temp_collections.find())
+        result = collections.find().sort("-time").limit(50)
+        return [{"temp": i["temp"], "time": i["time"]} for i in result]
 
 
 @app.route("/api/distance", methods=["GET", "POST"])
 def distance_api():
     collections = db["distance"]
     if request.method == "POST":
+        if request.headers.get("X-Auth-Token") != AUTH_TOKEN:
+            return "Unauthorized", 401
         distance = request.json["distance"]
         collections.insert_one({"distance": distance, "time": get_time_now()})
         send_ubidots({"distance": distance})
         return f"Data sent: {distance}"
     if request.method == "GET":
-        return "Distance: "
+        result = collections.find().sort("-time").limit(50)
+        return [{"distance": i["distance"], "time": i["time"]} for i in result]
 
 
 @app.route("/api/humidity", methods=["GET", "POST"])
 def humidity_api():
     collections = db["humidity"]
     if request.method == "POST":
+        if request.headers.get("X-Auth-Token") != AUTH_TOKEN:
+            return "Unauthorized", 401
         humidity = request.json["humidity"]
         collections.insert_one({"humidity": humidity, "time": get_time_now()})
         send_ubidots({"humidity": humidity})
         return f"Data sent: {humidity}"
     if request.method == "GET":
-        return "Distance: "
+        result = collections.find().sort("-time").limit(50)
+        return [{"humidity": i["humidity"], "time": i["time"]} for i in result]
 
 
 @app.route("/api/iot", methods=["POST"])
@@ -62,6 +69,8 @@ def iot_api():
     temp_collections = db["temperature"]
     distance_collections = db["distance"]
     if request.method == "POST":
+        if request.headers.get("X-Auth-Token") != AUTH_TOKEN:
+            return "Unauthorized", 401
         humidity = request.json["humidity"]
         distance = request.json["distance"]
         temp = request.json["temp"]

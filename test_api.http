@@ -1,5 +1,6 @@
 POST http://localhost:5000/api/temp HTTP/1.1
 Content-Type: application/json
+X-Auth-Token: novasmansa321
 
 {
 	"temp": 12.34
