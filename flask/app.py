@@ -29,7 +29,7 @@ def temp_api():
         send_ubidots({"temp": temp})
         return f"Data sent: {temp}"
     if request.method == "GET":
-        result = collections.find().sort("-time").limit(50)
+        result = collections.find().sort({"time": -1}).limit(50)
         return [{"temp": i["temp"], "time": i["time"]} for i in result]
 
 
@@ -44,7 +44,7 @@ def distance_api():
         send_ubidots({"distance": distance})
         return f"Data sent: {distance}"
     if request.method == "GET":
-        result = collections.find().sort("-time").limit(50)
+        result = collections.find().sort({"time": -1}).limit(50)
         return [{"distance": i["distance"], "time": i["time"]} for i in result]
 
 
@@ -59,7 +59,7 @@ def humidity_api():
         send_ubidots({"humidity": humidity})
         return f"Data sent: {humidity}"
     if request.method == "GET":
-        result = collections.find().sort("-time").limit(50)
+        result = collections.find().sort({"time": -1}).limit(50)
         return [{"humidity": i["humidity"], "time": i["time"]} for i in result]
 
 
