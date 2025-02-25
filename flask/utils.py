@@ -3,12 +3,13 @@ from dotenv import load_dotenv
 import os
 import json
 import requests as req
+from zoneinfo import ZoneInfo
 
 load_dotenv()
 
 
 def get_time_now():
-    return datetime.datetime.now(tz=datetime.timezone.utc)
+    return datetime.datetime.now(tz=ZoneInfo("Asia/Jakarta"))
 
 
 def send_ubidots(data):
