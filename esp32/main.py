@@ -1,24 +1,29 @@
-from machine import Pin
+from machine import Pin, SoftI2C
 import ujson
 import network
 import utime as time
 import dht
 import urequests as requests
 from hcsr04 import HCSR04
+import ssd1306
 from time import sleep
 
 
 
 DEVICE_ID = "nova-dashboard"
-WIFI_SSID = "DESKTOP 5543"
-WIFI_PASSWORD = "ahmadganteng321"
-TOKEN = "BBUS-GzPYLI0hqdHE4WkQVlo4p3cptliG7R"
+WIFI_SSID = "internet gratis"
+WIFI_PASSWORD = "admin1234"
 DHT_PIN = Pin(13)
-sensor = HCSR04(trigger_pin=21, echo_pin=22, echo_timeout_us=10000)
+sensor = HCSR04(trigger_pin=15, echo_pin=17, echo_timeout_us=10000)
+i2c = SoftI2C(scl=Pin(22), sda=Pin(21))
+
+oled_width = 128
+oled_height = 64
+oled = ssd1306.SSD1306_I2C(oled_width, oled_height, i2c)
 
 def send_data(temperature, humidity, distance):
-    url = "http://192.168.137.95:5000/api/iot"
-    headers = {"Content-Type": "application/json"}
+    url = "https://nova-sic-api.vercel.app/api/iot"
+    headers = {"Content-Type": "application/json", "X-Auth-Token": "novasmansa321"}
     data = {
         "temp": temperature,
         "humidity": humidity,
@@ -28,7 +33,7 @@ def send_data(temperature, humidity, distance):
     try:
         response = requests.post(url=url, data=ujson.dumps(data), headers=headers)
         print("Sent Data:", data)  # Debugging
-        #print("Response Code:", response.status_code)
+        print("Response Code:", response.status_code)
         print("Response:", response.text)
         del response  # Hapus response untuk menghemat memori
     except Exception as e:
@@ -49,10 +54,17 @@ dht_sensor = dht.DHT11(DHT_PIN)
 
 while True:
     try:
+        oled.fill(0)
+        #oled.show()
         dht_sensor.measure()
         temperature = dht_sensor.temperature()
         humidity = dht_sensor.humidity()
         distance = sensor.distance_cm()
+        oled.text(f"Suhu: {temperature}C", 0, 0)
+        oled.text(f"Kelembaban: {humidity}%", 0, 10)
+        oled.text("Ketinggian air:", 0, 20)
+        oled.text(f"{distance:.2f} cm", 0, 30)
+        oled.show()
         print(f"\nSuhu: {temperature}°C, Kelembaban: {humidity}%, Distance: {distance:.2f} cm")
         send_data(temperature, humidity, distance)
     except Exception as e:
